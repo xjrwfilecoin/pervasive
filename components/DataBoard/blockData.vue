@@ -12,7 +12,7 @@
           </p>
           <p class="dn">
             <span class="area">区块：{{data.area}}</span>
-            <span v-for="(item,index) in data.areaData" :key="index" class="item">{{item}}</span>
+            <span v-for="(item,index) in data.areaData" :key="index" class="item">高度：{{item}}</span>
           </p>
         </div>
       </div>
@@ -191,8 +191,16 @@
         for (var i = 0; i < this.value.length; i++) {
           if (this.value[i].chainId.type == 'b') {
             let timedata = []
+            let areadata = []
+
             timedata.push(this.value[i].blockList[0].Interval)
-            timedata.push(parseInt(this.value[i].blockList[0].Interval / this.value[i].blockList.length))
+            let interval = 0
+            for (var j = 0; j < this.value[i].blockList.length; j ++) {
+              interval += parseInt(this.value[i].blockList[j].Interval) // 总时间
+              areadata.push(this.value[i].blockList[j].Height) // 高度赋值
+            }
+            timedata.push(parseInt(interval / this.value[i].blockList.length)) // 平均时间
+            // 链赋值
             blist.push({
               id: this.value[i].chainId.id,
               type: 'b',
@@ -201,7 +209,7 @@
               area: '',
               number: this.value[i].blockList[0].Number,
               timeData: timedata,
-              areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
+              areaData: areadata
             })
           } else if (this.value[i].chainId.type == 'r') {
             rlist.push(this.value[i])
