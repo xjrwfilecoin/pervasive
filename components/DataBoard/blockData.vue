@@ -7,7 +7,8 @@
         <div class="itemWarp">
           <p class="up">
             <span class="time">时间：{{data.time}}</span>
-            <span v-for="(item,index) in data.timeData" :key="index" class="item">{{item}}</span>
+            <!-- <span v-for="(item,index) in data.timeData" :key="index" class="item">{{item}}</span> -->
+            <span class="item">最近：{{data.timeData[0]}}s，平均：{{data.timeData[1]}}s</span>
           </p>
           <p class="dn">
             <span class="area">区块：{{data.area}}</span>
@@ -189,6 +190,9 @@
         let slist = [] // 分片链
         for (var i = 0; i < this.value.length; i++) {
           if (this.value[i].chainId.type == 'b') {
+            let timedata = []
+            timedata.push(this.value[i].blockList[0].Interval)
+            timedata.push(parseInt(this.value[i].blockList[0].Interval / this.value[i].blockList.length))
             blist.push({
               id: this.value[i].chainId.id,
               type: 'b',
@@ -196,7 +200,7 @@
               time: this.timestampToTime(this.value[i].blockList[0].Time),
               area: '',
               number: this.value[i].blockList[0].Number,
-              timeData: ["最近2s", "平均12s"],
+              timeData: timedata,
               areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
             })
           } else if (this.value[i].chainId.type == 'r') {
