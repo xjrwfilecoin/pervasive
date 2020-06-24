@@ -3,7 +3,7 @@
     <Header class="main_header"></Header>
     <div class="board_Data">
       <el-row :gutter="15" style="width:100%;margin-left:0;">
-        <el-col :span="12">
+        <!-- <el-col :span="12">
           <el-card class="tpsLine_data">
             <chartLine id="tpsLine_one" style="height:30vh;margin:0 auto" :text="textTPS" :subtext="subTPS"
               :value="totalFlow" :width="LineWidth" />
@@ -15,19 +15,19 @@
             <chartLine id="tpsLine_two" style="height:30vh;margin:0 auto" :text="textWide" :subtext="subWide"
               :value="totalFlow" :width="LineWidth" />
           </el-card>
-        </el-col>
+        </el-col> -->
 
         <el-col :span="12">
           <el-card class="block_data">
-            <blockData :value="chainList"></blockData>
+            <blockData :value="chainList" :addInfo="eventInfo"></blockData>
           </el-card>
         </el-col>
 
         <el-col :span="12">
           <cardData style="height:20vh;margin:1.5vh 0" :cardForm="cardForm"></cardData>
           <el-card class="areaLine_data">
-            <changeLine id="chageLine" style="height:30vh;margin:0 auto" :value="totalFlow" :width="LineWidth">
-            </changeLine>
+            <!-- <changeLine id="chageLine" style="height:30vh;margin:0 auto" :value="totalFlow" :width="LineWidth">
+            </changeLine> -->
           </el-card>
         </el-col>
       </el-row>
@@ -51,11 +51,11 @@
     jsTime,
     formatDateTime
   } from "~/utils/tools";
-  import {
-    sendSock,
-    getCallBack,
-    closeWebSocket
-  } from '@/plugins/sockjs'
+  // import {
+  //   sendSock,
+  //   getCallBack,
+  //   closeWebSocket
+  // } from '@/utils/websocket.js'
 
   export default {
     components: {
@@ -76,6 +76,26 @@
         countNode: [],
         cardForm: {},
         LineWidth: '560',
+        eventInfo: []
+      }
+    },
+    watch: {
+      blockMsg: function (n, o) {},
+      websockMsg: function (n, o) {
+        if (n !== o && n) {
+          let _data = n;
+          //根据数据的变化做出相应的处理
+          if (_data.event == 'block') {
+            this.eventInfo = _data.body
+            console.log('!!!!!!!!!!!!!!!!!!!', _data.body)
+          }
+        }
+      },
+    },
+    computed: {
+      blockMsg() {
+        let results = this.$store.getters.chainlist
+        this.getChainInfo(results)
       }
     },
     mounted() {
@@ -83,33 +103,22 @@
       this.getWidth()
     },
     destroyed() {
-      closeWebSocket();
+      // closeWebSocket();
     },
     created() {
-      this.chainInfo()
+      this.initState()
     },
     methods: {
-      chainInfo() {
+      initState() {
+        this.$store.dispatch('WEBSOCKET_INIT', "ws://" + process.env.baseURL + "/v1.0/conn")
         let obj_one = {
           uri: 'chainInfo',
           body: {}
-          // uri: 'blockInfo',
-          // body: {
-          //   type: 's',
-          //   number: '100004'
-          // }
         }
-        sendSock(obj_one)
-        setInterval(() => { // setInterval
-          let globalCallback = getCallBack()
-          if (globalCallback) {
-            this.chainList = globalCallback.chainList
-            this.totalFlow = globalCallback.totalFlow
-            this.countNode = globalCallback.countNode
-          }
-
-          console.log('xxxxxxxxxxxxxxx', globalCallback)
-        }, 5000)
+        this.$store.dispatch("WEBSOCKET_REIVE", obj_one);
+      },
+      getChainInfo(data) {
+        this.chainList = data
       },
       // 获取折线图宽度
       getWidth() {

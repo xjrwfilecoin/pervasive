@@ -6,13 +6,13 @@
         <div class="title">{{ node.label }}</div>
         <div class="itemWarp">
           <p class="up">
-            <span class="time">时间：{{data.time}}</span>
+            <span class="time">时间：{{jsTime(data.time)}}</span>
             <!-- <span v-for="(item,index) in data.timeData" :key="index" class="item">{{item}}</span> -->
-            <span class="item">最近：{{data.timeData[0]}}s，平均：{{data.timeData[1]}}s</span>
+            <span class="item">最近：{{data.interval/1000}}s，平均：{{data.interval/1000}}s</span>
           </p>
           <p class="dn">
-            <span class="area">区块：{{data.area}}</span>
-            <span v-for="(item,index) in data.areaData" :key="index" class="item">高度：{{item}}</span>
+            <span class="area">区块：高度{{data.height}}</span>
+            <!-- <span v-for="(item,index) in data.areaData" :key="index" class="item">高度：{{item}}</span> -->
           </p>
         </div>
       </div>
@@ -24,160 +24,32 @@
     sendSock,
     getCallBack,
   } from '@/plugins/sockjs'
+  import {
+    getTreeList
+  } from "~/utils/treeTool";
   export default {
     props: {
-      value: Array
+      value: Array,
+      addInfo: Array
     },
     watch: {
       value: {
         handler(newValue, oldValue) {
           this.value = newValue; //把新值赋值给我们的属性数据
           this.getData()
-          console.log('3333333333333333333333333333', this.value)
+        },
+        deep: true
+      },
+      addInfo: {
+        handler(newValue, oldValue) {
+          this.addInfo = newValue; //把新值赋值给我们的属性数据
+          this.addData()
         },
         deep: true
       }
     },
     data() {
       const data = []
-      // [{
-      //   id: 1,
-      //   label: "信标链-01",
-      //   time: "时间",
-      //   area: "区块",
-      //   timeData: ["最近2s", "平均12s"],
-      //   areaData: ["高度 689", "高度 689", "高度 689", "高度 689"],
-      //   children: [{
-      //       id: 2,
-      //       label: "中继链-01",
-      //       time: "时间",
-      //       area: "区块",
-      //       timeData: ["最近2s", "平均12s"],
-      //       areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //     },
-      //     {
-      //       id: 3,
-      //       label: "中继链-02",
-      //       time: "时间",
-      //       area: "区块",
-      //       timeData: ["最近2s", "平均12s"],
-      //       areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //     },
-      //     {
-      //       id: 4,
-      //       label: "中继链-04",
-      //       time: "时间",
-      //       area: "区块",
-      //       timeData: ["最近2s", "平均12s"],
-      //       areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //     },
-      //     {
-      //       id: 5,
-      //       label: "中继链-05",
-      //       time: "时间",
-      //       area: "区块",
-      //       timeData: ["最近2s", "平均12s"],
-      //       areaData: ["高度 689", "高度 689", "高度 689", "高度 689"],
-      //       children: [{
-      //           id: 6,
-      //           label: "分片链-06",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 7,
-      //           label: "分片链-07",
-      //           time: "时间",
-      //           area: "时间",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 8,
-      //           label: "分片链-08",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 9,
-      //           label: "分片链-09",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 10,
-      //           label: "分片链-09",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 11,
-      //           label: "分片链-09",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 12,
-      //           label: "分片链-09",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 13,
-      //           label: "分片链-09",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 14,
-      //           label: "分片链-09",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 15,
-      //           label: "分片链-09",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 16,
-      //           label: "分片链-09",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         },
-      //         {
-      //           id: 17,
-      //           label: "分片链-09",
-      //           time: "时间",
-      //           area: "区块",
-      //           timeData: ["最近2s", "平均12s"],
-      //           areaData: ["高度 689", "高度 689", "高度 689", "高度 689"]
-      //         }
-      //       ]
-      //     },
-      //   ]
-      // }];
       return {
         data: JSON.parse(JSON.stringify(data)),
         data: JSON.parse(JSON.stringify(data))
@@ -189,36 +61,54 @@
         let rlist = [] // 中继链
         let slist = [] // 分片链
         for (var i = 0; i < this.value.length; i++) {
-          if (this.value[i].chainId.type == 'b') {
-            let timedata = []
-            let areadata = []
-
-            timedata.push(this.value[i].blockList[0].Interval)
-            let interval = 0
-            for (var j = 0; j < this.value[i].blockList.length; j ++) {
-              interval += parseInt(this.value[i].blockList[j].Interval) // 总时间
-              areadata.push(this.value[i].blockList[j].Height) // 高度赋值
-            }
-            timedata.push(parseInt(interval / this.value[i].blockList.length)) // 平均时间
-            // 链赋值
-            blist.push({
-              id: this.value[i].chainId.id,
-              type: 'b',
-              label: '信标链' + i + '',
-              time: this.timestampToTime(this.value[i].blockList[0].Time),
-              area: '',
-              number: this.value[i].blockList[0].Number,
-              timeData: timedata,
-              areaData: areadata
+          if (this.value[i].type == 'b') {
+            blist.push(this.value[i])
+            blist.forEach(item => {
+              item.label = '信标链'
+              item.children = []
             })
-          } else if (this.value[i].chainId.type == 'r') {
+          } else if (this.value[i].type == 'r') {
             rlist.push(this.value[i])
-          } else if (this.value[i].chainId.type == 's') {
+            rlist.forEach(item => {
+              item.label = '中继链'
+              item.children = []
+            })
+          } else if (this.value[i].type == 's') {
             slist.push(this.value[i])
+            slist.forEach(item => {
+              item.label = '分片链'
+            })
           }
         }
         this.data = blist
-        console.log('xxaaaaaaaaaaaaaaa', this.data)
+        rlist[0].children = slist
+        this.data[0].children = rlist
+      },
+      addData() {
+        if (!this.value.length > 0) {
+          return
+        }
+        if (this.addInfo[0].type == 'b') {
+          this.addInfo.forEach(item => {
+            item.label = '信标链'
+            item.children = []
+          })
+          this.data.push(this.addInfo[0])
+        } else if (this.addInfo[0].type == 'r') {
+          this.addInfo.forEach(item => {
+            item.label = '中继链'
+            item.children = []
+          })
+          // this.$set(this.data[0].children, this.data[0].children.length, this.addInfo[0]);
+          this.data[0].children.push(this.addInfo[0])
+        } else if (this.addInfo[0].type == 's') {
+          this.addInfo.forEach(item => {
+            item.label = '分片链'
+          })
+          // this.$set(this.data[0].children[0].children, this.data[0].children[0].children.length, this.addInfo[0]);
+          this.data[0].children[0].children.push(this.addInfo[0])
+        }
+        console.log('~~~~~~~wwwwwwwwwww', this.data)
       },
       getBlockInfo(node) {
         let obj = {
@@ -229,16 +119,26 @@
           }
         }
         sendSock(obj)
+        setInterval(() => { // setInterval
+          let globalBlock = getCallBack()
+          if (globalBlock) {
+            // this.chainList = globalBlock
+            console.log('xxxxqqqqxxxxxxxxxxx', globalBlock)
+          }
+        }, 5000)
+
       },
-      timestampToTime(timestamp) {
-        var date = new Date(parseInt(timestamp) * 1000); //时间戳为10位需*1000，时间戳为13位的话不需乘1000
-        var Y = date.getFullYear() + '-';
-        var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
-        var D = date.getDate() + ' ';
-        var h = (date.getHours() >= 10 ? date.getHours() : '0' + date.getHours()) + ':';
-        var m = (date.getMinutes() >= 10 ? date.getMinutes() : '0' + date.getMinutes()) + ':';
-        var s = (date.getSeconds() >= 10 ? date.getSeconds() : '0' + date.getSeconds());
-        return Y + M + D + h + m + s;
+      jsTime(val) {
+        if (val === '') {
+          return '----'
+        } else if (val === '0001-01-01T00:00:00Z') {
+          return '----'
+        } else if (val === '5000-01-01T23:59:59+08:00') {
+          return '永久'
+        } else {
+          val = val.toString().replace('T', ' ')
+          return val.substring(0, 19)
+        }
       }
     }
   };
