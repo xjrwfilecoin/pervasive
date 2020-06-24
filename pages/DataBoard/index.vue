@@ -81,16 +81,16 @@
     },
     watch: {
       blockMsg: function (n, o) {},
-      websockMsg: function (n, o) {
-        if (n !== o && n) {
-          let _data = n;
-          //根据数据的变化做出相应的处理
-          if (_data.event == 'block') {
-            this.eventInfo = _data.body
-            console.log('!!!!!!!!!!!!!!!!!!!', _data.body)
-          }
-        }
-      },
+      // websockMsg: function (n, o) {
+      //   if (n !== o && n) {
+      //     let _data = n;
+      //     //根据数据的变化做出相应的处理
+      //     if (_data.event == 'block') {
+      //       this.eventInfo = _data.body
+      //       console.log('!!!!!!!!!!!!!!!!!!!', _data.body)
+      //     }
+      //   }
+      // },
     },
     computed: {
       blockMsg() {
@@ -119,6 +119,13 @@
       },
       getChainInfo(data) {
         this.chainList = data
+        this.getBlockInfo()
+      },
+      getBlockInfo() {
+        this.$store.subscribe((mutation, state) => {
+          this.eventInfo = state.eventlist
+          console.log("rd: state", this.eventInfo);
+        });
       },
       // 获取折线图宽度
       getWidth() {

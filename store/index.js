@@ -26,8 +26,8 @@ export const mutations = {
   },
   //将接收到的数据赋值
   WEBSOCKET_REIVE(state, data) {
-    state.eventlist = data;
-    console.log('=========================',data)
+    state.eventlist = JSON.parse(data).body;
+    console.log('=========================',JSON.parse(data).body)
   },
   // chainList赋值
   WEBSOCKET_CHAIN(state, data) {
@@ -36,7 +36,7 @@ export const mutations = {
   // blockList赋值
   WEBSOCKET_BLOCK(state, data) {
     state.chainlist.push(JSON.parse(data).body)
-    console.log('===1111111======================',data)
+    console.log('===1111111======================',state.chainlist)
   },
 }
 
@@ -78,7 +78,6 @@ export const actions = {
       }, 2000)
     } else {
       if (this.state.websock.readyState === 1) {
-        console.log('33333333333ddddddddddd', this.state)
         let _msg = JSON.stringify(this.state.urlbody);
         this.state.websock.send(_msg);
       } else if (this.state.websock.readyState === this.state.websock.CONNECTING) {

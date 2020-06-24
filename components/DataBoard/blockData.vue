@@ -49,10 +49,11 @@
       }
     },
     data() {
-      const data = []
+      // const data = []
       return {
-        data: JSON.parse(JSON.stringify(data)),
-        data: JSON.parse(JSON.stringify(data))
+        data: []
+        // data: JSON.parse(JSON.stringify(data)),
+        // data: JSON.parse(JSON.stringify(data))
       };
     },
     methods: {
@@ -85,30 +86,35 @@
         this.data[0].children = rlist
       },
       addData() {
+        console.log('~~~~~~~wwwwwwwwwww', this.addInfo)
         if (!this.value.length > 0) {
           return
         }
-        if (this.addInfo[0].type == 'b') {
-          this.addInfo.forEach(item => {
-            item.label = '信标链'
-            item.children = []
-          })
-          this.data.push(this.addInfo[0])
-        } else if (this.addInfo[0].type == 'r') {
-          this.addInfo.forEach(item => {
-            item.label = '中继链'
-            item.children = []
-          })
-          // this.$set(this.data[0].children, this.data[0].children.length, this.addInfo[0]);
-          this.data[0].children.push(this.addInfo[0])
-        } else if (this.addInfo[0].type == 's') {
-          this.addInfo.forEach(item => {
-            item.label = '分片链'
-          })
-          // this.$set(this.data[0].children[0].children, this.data[0].children[0].children.length, this.addInfo[0]);
-          this.data[0].children[0].children.push(this.addInfo[0])
+        if (this.addInfo && this.addInfo.length > 0) {
+          for (var i = 0; i < this.addInfo.length; i++) {
+            if (this.addInfo[i].type == 'b') {
+              this.addInfo.forEach(item => {
+                item.label = '信标链'
+                item.children = []
+              })
+              this.data.push(this.addInfo[i])
+            } else if (this.addInfo[i].type == 'r') {
+              this.addInfo.forEach(item => {
+                item.label = '中继链'
+                item.children = []
+              })
+              // this.$set(this.data[0].children, this.data[0].children.length, this.addInfo[0]);
+              this.data[0].children.push(this.addInfo[i])
+            } else if (this.addInfo[i].type == 's') {
+              this.addInfo.forEach(item => {
+                item.label = '分片链'
+              })
+              // this.$set(this.data[0].children[0].children, this.data[0].children[0].children.length, this.addInfo[0]);
+              this.data[0].children[0].children.push(this.addInfo[i])
+            }
+          }
         }
-        console.log('~~~~~~~wwwwwwwwwww', this.data)
+        console.log('*************', this.data)
       },
       getBlockInfo(node) {
         let obj = {
