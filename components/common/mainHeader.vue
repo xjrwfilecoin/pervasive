@@ -2,7 +2,7 @@
   <div>
     <p class="dashboard_title">Test dashboard</p>
     <div class="header_div">
-      <el-button type="primary" class="header_btn">10K 测试</el-button>
+      <el-button type="primary" class="header_btn" @click="CmdTest()">10K 测试</el-button>
       <el-button type="warning" class="header_btn">100K 测试</el-button>
       <el-button type="danger" class="header_btn">500K 测试</el-button>
       <el-button type="success" class="header_btn">1M 测试</el-button>
@@ -16,7 +16,23 @@
     data() {
       return {}
     },
-    methods: {}
+    methods: {
+      CmdTest() {
+        let obj = {
+          uri: 'cmd',
+          body: {
+            type: "s",
+            cmd: {
+              key: "transfer",
+              params: {
+                amount: 10000
+              }
+            }
+          }
+        }
+        this.$store.dispatch("WEBSOCKET_REIVE", obj);
+      }
+    }
   }
 
 </script>

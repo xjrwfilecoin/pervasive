@@ -17,7 +17,7 @@
             <p class="line"></p>
             <div class="itemRate">
               <p class="left_p">出块时间</p>
-              <h3>2s</h3>
+              <h3>{{ time }}s</h3>
             </div>
           </div>
         </el-card>
@@ -74,13 +74,31 @@
       cardForm: {
         deep: true, // 深度监听
         handler(newVal, oldVal) {}
-      }
+      },
+      blockMsg: function (n, o) {},
     },
     data() {
-      return {}
+      return {
+        time: '',
+      }
+    },
+    computed: {
+      blockMsg() {
+        if (this.$store.getters.blockinfo) {
+          let results = this.$store.getters.blockinfo
+          this.BlockInfo(results)
+        }
+        // let results = this.$store.getters.blockinfo
+        // this.BlockInfo(results)
+      }
     },
     mounted() {},
-    methods: {}
+    methods: {
+      BlockInfo(data) {
+        console.log('------------------------',data)
+        this.time = data[0].interval/1000
+      }
+    }
   }
 
 </script>

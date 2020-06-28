@@ -3,7 +3,7 @@
     <Header class="main_header"></Header>
     <div class="board_Data">
       <el-row :gutter="15" style="width:100%;margin-left:0;">
-        <!-- <el-col :span="12">
+        <el-col :span="12">
           <el-card class="tpsLine_data">
             <chartLine id="tpsLine_one" style="height:30vh;margin:0 auto" :text="textTPS" :subtext="subTPS"
               :value="totalFlow" :width="LineWidth" />
@@ -15,7 +15,7 @@
             <chartLine id="tpsLine_two" style="height:30vh;margin:0 auto" :text="textWide" :subtext="subWide"
               :value="totalFlow" :width="LineWidth" />
           </el-card>
-        </el-col> -->
+        </el-col>
 
         <el-col :span="12">
           <el-card class="block_data">
@@ -26,8 +26,8 @@
         <el-col :span="12">
           <cardData style="height:20vh;margin:1.5vh 0" :cardForm="cardForm"></cardData>
           <el-card class="areaLine_data">
-            <!-- <changeLine id="chageLine" style="height:30vh;margin:0 auto" :value="totalFlow" :width="LineWidth">
-            </changeLine> -->
+            <changeLine id="chageLine" style="height:30vh;margin:0 auto" :value="totalFlow" :width="LineWidth">
+            </changeLine>
           </el-card>
         </el-col>
       </el-row>
@@ -76,6 +76,7 @@
     },
     watch: {
       chainMsg: function (n, o) {},
+      cmdMsg: function (n, o) {},
       // websockMsg: function (n, o) {
       //   if (n !== o && n) {
       //     let _data = n;
@@ -91,6 +92,11 @@
       chainMsg() {
         let results = this.$store.getters.chainlist
         this.getChainInfo(results)
+      },
+      cmdMsg() {
+        let results = this.$store.getters.cmdbody
+        console.log('wwwwwwwwwww',results)
+        // this.getChainInfo(results)
       }
     },
     mounted() {

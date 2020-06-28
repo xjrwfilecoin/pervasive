@@ -3,7 +3,9 @@
     <el-tree class="tree" :data="data" node-key="time" :indent="0" ref="trees" default-expand-all
       :expand-on-click-node="false" :highlight-current="true">
       <div class="custom-tree-node" slot-scope="{node, data}" @click="getBlockInfo(data)">
-        <div class="title">{{ node.label }}</div>
+        <div style="color:#4bb0ff" v-if="node.label == '信标链'">{{ node.label }}</div>
+        <div style="color:#67C23A" v-if="node.label == '中继链'">{{ node.label }}</div>
+        <div style="color:red" v-if="node.label == '分片链'">{{ node.label }}</div>
         <div class="itemWarp">
           <p class="up">
             <span class="time">时间：{{jsTime(data.time)}}</span>
@@ -11,7 +13,8 @@
             <span class="item">最近：{{data.interval/1000}}s，平均：{{data.interval/1000}}s</span>
           </p>
           <p class="dn">
-            <span class="area">区块：高度{{data.height}}</span>
+            <span class="area">区块：</span>
+            <span class="item">高度{{data.height}}， 交易数：{{data.trans}}， TPS：，大小：{{data.size}}KB</span>
             <!-- <span v-for="(item,index) in data.areaData" :key="index" class="item">高度：{{item}}</span> -->
           </p>
         </div>
@@ -47,13 +50,6 @@
         },
         deep: true
       },
-      blockMsg: function (n, o) {},
-    },
-    computed: {
-      blockMsg() {
-        let results = this.$store.getters.blockinfo
-        this.BlockInfo(results)
-      }
     },
     data() {
       return {
@@ -145,12 +141,31 @@
         }
         this.$store.dispatch("WEBSOCKET_REIVE", obj);
       },
-      BlockInfo(data) {
-        console.log('000000000000000000',data)
+      getTime(val) {
+        let time = val + ''
+        if (time.length == 29) {
+          this.jsTime(time)
+        } else {
+          this.formatDate(time)
+        }
       },
       jsTime(val) {
         if (val === '') {
           return '----'
+        } else if (val.length != 29) {
+          let date = new Date(val);
+          let y = date.getFullYear();
+          let MM = date.getMonth() + 1;
+          MM = MM < 10 ? ('0' + MM) : MM;
+          let d = date.getDate();
+          d = d < 10 ? ('0' + d) : d;
+          let h = date.getHours();
+          h = h < 10 ? ('0' + h) : h;
+          let m = date.getMinutes();
+          m = m < 10 ? ('0' + m) : m;
+          let s = date.getSeconds();
+          s = s < 10 ? ('0' + s) : s;
+          return y + '-' + MM + '-' + d + ' ' + h + ':' + m + ':' + s;
         } else if (val === '0001-01-01T00:00:00Z') {
           return '----'
         } else if (val === '5000-01-01T23:59:59+08:00') {
@@ -159,7 +174,7 @@
           val = val.toString().replace('T', ' ')
           return val.substring(0, 19)
         }
-      }
+      },
     }
   };
 
@@ -212,10 +227,6 @@
     font-size: 14px;
     padding-right: 8px;
     align-items: center;
-
-    .title {
-      color: #4bb0ff;
-    }
   }
 
   .custom-tree-container /deep/ .el-tree>.el-tree-node:after {

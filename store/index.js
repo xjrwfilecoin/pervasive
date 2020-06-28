@@ -12,7 +12,8 @@ export const state = () => ({
   chainlist: null, //chainlist 返回的数据
   blocklist: null, //blocklist 返回的数据
   blockinfo: null,
-  allblocklist: null
+  allblocklist: null,
+  cmdbody: null
 })
 
 export const mutations = {
@@ -46,6 +47,10 @@ export const mutations = {
   // blockinfo赋值
   WEBSOCKET_BLOCK_INFO(state, data) {
     state.blockinfo = JSON.parse(data).body
+  },
+  // cmd交易命令
+  WEBSOCKET_BLOCK_CMD(state, data) {
+    state.cmdbody = JSON.parse(data).body
   }
 }
 
@@ -71,6 +76,8 @@ export const actions = {
             commit('WEBSOCKET_CHAIN', callBack.data);
           } else if (JSON.parse(callBack.data).uri == 'blockInfo') {
             commit('WEBSOCKET_BLOCK_INFO', callBack.data);
+          } else if (JSON.parse(callBack.data).uri == 'cmd') {
+            commit('WEBSOCKET_BLOCK_CMD', callBack.data);
           } else {
             commit('WEBSOCKET_REIVE', callBack.data);
             if (JSON.parse(callBack.data).event == 'block') {
@@ -124,6 +131,9 @@ export const actions = {
 export const getters = {
   allblocklist(state) {
     return state.allblocklist;
+  },
+  cmdbody(state) {
+    return state.cmdbody;
   },
   blockinfo(state) {
     return state.blockinfo;
