@@ -51,11 +51,6 @@
     jsTime,
     formatDateTime
   } from "~/utils/tools";
-  // import {
-  //   sendSock,
-  //   getCallBack,
-  //   closeWebSocket
-  // } from '@/utils/websocket.js'
 
   export default {
     components: {
@@ -80,7 +75,7 @@
       }
     },
     watch: {
-      blockMsg: function (n, o) {},
+      chainMsg: function (n, o) {},
       // websockMsg: function (n, o) {
       //   if (n !== o && n) {
       //     let _data = n;
@@ -93,7 +88,7 @@
       // },
     },
     computed: {
-      blockMsg() {
+      chainMsg() {
         let results = this.$store.getters.chainlist
         this.getChainInfo(results)
       }

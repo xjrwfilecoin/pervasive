@@ -1,6 +1,6 @@
 <template>
   <div class="custom-tree-container mytree" ref="treeDiv" style="overflow-y:auto; height:calc(63vh - 100px);">
-    <el-tree class="tree" :data="data" node-key="id" :indent="0" ref="trees" default-expand-all
+    <el-tree class="tree" :data="data" node-key="time" :indent="0" ref="trees" default-expand-all
       :expand-on-click-node="false" :highlight-current="true">
       <div class="custom-tree-node" slot-scope="{node, data}" @click="getBlockInfo(data)">
         <div class="title">{{ node.label }}</div>
@@ -46,14 +46,18 @@
           this.addData()
         },
         deep: true
+      },
+      blockMsg: function (n, o) {},
+    },
+    computed: {
+      blockMsg() {
+        let results = this.$store.getters.blockinfo
+        this.BlockInfo(results)
       }
     },
     data() {
-      // const data = []
       return {
-        data: []
-        // data: JSON.parse(JSON.stringify(data)),
-        // data: JSON.parse(JSON.stringify(data))
+        data: [],
       };
     },
     methods: {
@@ -84,13 +88,16 @@
         this.data = blist
         rlist[0].children = slist
         this.data[0].children = rlist
+        this.$store.commit('WEBSOCKET_BLOCK_LIST', this.data);
       },
       addData() {
-        console.log('~~~~~~~wwwwwwwwwww', this.addInfo)
-        if (!this.value.length > 0) {
+        if (this.$store.state.allblocklist) {
+          this.data = this.$store.state.allblocklist.slice()
+        }
+        if (!this.value || !this.value.length > 0) {
           return
         }
-        if (this.addInfo && this.addInfo.length > 0) {
+        if (this.addInfo) {
           for (var i = 0; i < this.addInfo.length; i++) {
             if (this.addInfo[i].type == 'b') {
               this.addInfo.forEach(item => {
@@ -98,23 +105,35 @@
                 item.children = []
               })
               this.data.push(this.addInfo[i])
+              this.$store.dispatch("WEBSOCKET_BLOCK_LIST", this.data);
             } else if (this.addInfo[i].type == 'r') {
               this.addInfo.forEach(item => {
                 item.label = '中继链'
                 item.children = []
               })
-              // this.$set(this.data[0].children, this.data[0].children.length, this.addInfo[0]);
-              this.data[0].children.push(this.addInfo[i])
+              for (var j = 0; j < this.data.length; j++) {
+                if (this.data[j].children.length < 32) {
+                  this.data[j].children.push(this.addInfo[i])
+                  this.$store.dispatch("WEBSOCKET_BLOCK_LIST", this.data);
+                  return
+                }
+              }
             } else if (this.addInfo[i].type == 's') {
               this.addInfo.forEach(item => {
                 item.label = '分片链'
               })
-              // this.$set(this.data[0].children[0].children, this.data[0].children[0].children.length, this.addInfo[0]);
-              this.data[0].children[0].children.push(this.addInfo[i])
+              for (var m = 0; m < this.data.length; m++) {
+                for (var n = 0; n < this.data[m].children.length; n++) {
+                  if (this.data[m].children[n].children.length < 32) {
+                    this.data[m].children[n].children.push(this.addInfo[i])
+                    this.$store.dispatch("WEBSOCKET_BLOCK_LIST", this.data);
+                    return
+                  }
+                }
+              }
             }
           }
         }
-        console.log('*************', this.data)
       },
       getBlockInfo(node) {
         let obj = {
@@ -124,15 +143,10 @@
             number: node.number
           }
         }
-        sendSock(obj)
-        setInterval(() => { // setInterval
-          let globalBlock = getCallBack()
-          if (globalBlock) {
-            // this.chainList = globalBlock
-            console.log('xxxxqqqqxxxxxxxxxxx', globalBlock)
-          }
-        }, 5000)
-
+        this.$store.dispatch("WEBSOCKET_REIVE", obj);
+      },
+      BlockInfo(data) {
+        console.log('000000000000000000',data)
       },
       jsTime(val) {
         if (val === '') {
