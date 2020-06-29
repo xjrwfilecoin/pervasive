@@ -95,7 +95,18 @@
       },
       cmdMsg() {
         let results = this.$store.getters.cmdbody
-        console.log('wwwwwwwwwww',results)
+        if (results && results.error && results.error != null) {
+          this.$message({
+            message: results.error.message,
+            type: 'warning'
+          });
+        } else {
+          this.$message({
+            message: '提交成功！',
+            type: 'success'
+          });
+        }
+        console.log('wwwwwwwwwww', results)
         // this.getChainInfo(results)
       }
     },

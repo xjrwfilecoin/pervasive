@@ -1,7 +1,7 @@
 <template>
   <div class="custom-tree-container mytree" ref="treeDiv" style="overflow-y:auto; height:calc(63vh - 100px);">
     <el-tree class="tree" :data="data" node-key="time" :indent="0" ref="trees" default-expand-all
-      :expand-on-click-node="false" :highlight-current="true">
+      :expand-on-click-node="false" :highlight-current="true" accordion>
       <div class="custom-tree-node" slot-scope="{node, data}" @click="getBlockInfo(data)">
         <div style="color:#4bb0ff" v-if="node.label == '信标链'">{{ node.label }}</div>
         <div style="color:#67C23A" v-if="node.label == '中继链'">{{ node.label }}</div>
@@ -140,14 +140,6 @@
           }
         }
         this.$store.dispatch("WEBSOCKET_REIVE", obj);
-      },
-      getTime(val) {
-        let time = val + ''
-        if (time.length == 29) {
-          this.jsTime(time)
-        } else {
-          this.formatDate(time)
-        }
       },
       jsTime(val) {
         if (val === '') {

@@ -2,7 +2,11 @@
   <div>
     <p class="dashboard_title">Test dashboard</p>
     <div class="header_div">
-      <el-button type="primary" class="header_btn" @click="CmdTest()">10K 测试</el-button>
+      <el-popover placement="top-start" width="200" trigger="hover"
+        content="全网在10秒内生成指定数量交易，用于验证TPS性能和带宽消耗。">
+        <el-button slot="reference" type="primary" class="header_btn" @click="CmdTest()">10K 测试</el-button>
+      </el-popover>
+      <!-- <el-button type="primary" class="header_btn" @click="CmdTest()">10K 测试</el-button> -->
       <el-button type="warning" class="header_btn">100K 测试</el-button>
       <el-button type="danger" class="header_btn">500K 测试</el-button>
       <el-button type="success" class="header_btn">1M 测试</el-button>

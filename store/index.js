@@ -50,7 +50,7 @@ export const mutations = {
   },
   // cmd交易命令
   WEBSOCKET_BLOCK_CMD(state, data) {
-    state.cmdbody = JSON.parse(data).body
+    state.cmdbody = JSON.parse(data)
   }
 }
 
