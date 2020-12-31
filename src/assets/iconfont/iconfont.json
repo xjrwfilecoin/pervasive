@@ -1,0 +1,58 @@
+{
+  "id": "2255660",
+  "name": "普适链浏览器",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon",
+  "description": "普适链浏览器",
+  "glyphs": [
+    {
+      "icon_id": "1789144",
+      "name": "锁定数据集",
+      "font_class": "-lock-block",
+      "unicode": "e6b0",
+      "unicode_decimal": 59056
+    },
+    {
+      "icon_id": "15887757",
+      "name": "区块",
+      "font_class": "qukuai",
+      "unicode": "e6a2",
+      "unicode_decimal": 59042
+    },
+    {
+      "icon_id": "16516766",
+      "name": "统计",
+      "font_class": "-tongji",
+      "unicode": "e6b7",
+      "unicode_decimal": 59063
+    },
+    {
+      "icon_id": "16800985",
+      "name": "上行速率",
+      "font_class": "-Up",
+      "unicode": "e61d",
+      "unicode_decimal": 58909
+    },
+    {
+      "icon_id": "16800994",
+      "name": "下行速率",
+      "font_class": "-Down",
+      "unicode": "e621",
+      "unicode_decimal": 58913
+    },
+    {
+      "icon_id": "18267938",
+      "name": "区块",
+      "font_class": "-block",
+      "unicode": "e994",
+      "unicode_decimal": 59796
+    },
+    {
+      "icon_id": "3900384",
+      "name": "架构图",
+      "font_class": "-ChainInfo",
+      "unicode": "e620",
+      "unicode_decimal": 58912
+    }
+  ]
+}
