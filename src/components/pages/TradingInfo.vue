@@ -74,7 +74,7 @@
             </el-table-column>
             <el-table-column prop="to" label="接收方" min-width="220" align="center" show-overflow-tooltip>
             </el-table-column>
-            <el-table-column prop="amount" label="金额（FIL）" min-width="220" align="center">
+            <el-table-column prop="amount" label="金额（FIL）" min-width="200" align="center">
             </el-table-column>
             <el-table-column label="操作" width="80" align="center">
               <template slot-scope="scope">
@@ -100,6 +100,8 @@
   import moment from 'moment'
 
   export default {
+    name: 'TradingInfo',
+
     components: {
       Header,
       tradDialog
@@ -112,9 +114,22 @@
       }
     },
 
+    watch: {
+      $route() {
+        if (this.$route.path == '/tradinginfo') {
+          this.chainKey = this.$router.currentRoute.query.chainKey
+          this.from = this.$router.currentRoute.query.from
+          this.to = this.$router.currentRoute.query.to
+          this.height = this.$router.currentRoute.query.height
+          this.getBlockInfo()
+          this.getTradList()
+        }
+      },
+    },
+
     data() {
       return {
-        Title: '普适链分片交易',
+        Title: '链分片交易',
         chainKey: '',
         from: '',
         to: '',
@@ -178,9 +193,10 @@
           }
           this.webSocket.sendRequest('blockInfo', params).then((result) => {
             if (JSON.stringify(result) != "{}") {
-              // this.$store.commit('BLOCK_INFO', result)
               this.basicInfo = result
             }
+          }).catch((error) => {
+            this.$message.warning(error)
           })
         }
       },
@@ -193,6 +209,8 @@
         }
         this.webSocket.sendRequest('ssInfo', params).then((result) => {
           this.tradList = result
+        }).catch((error) => {
+          this.$message.warning(error)
         })
       },
 

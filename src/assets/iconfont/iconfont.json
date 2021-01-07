@@ -6,6 +6,13 @@
   "description": "普适链浏览器",
   "glyphs": [
     {
+      "icon_id": "1085521",
+      "name": "说明",
+      "font_class": "profile",
+      "unicode": "e69a",
+      "unicode_decimal": 59034
+    },
+    {
       "icon_id": "1789144",
       "name": "锁定数据集",
       "font_class": "-lock-block",

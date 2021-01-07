@@ -2,7 +2,7 @@
   <div class="headerC">
     <div class="wrapper">
       <div class="header">
-        普适链浏览器
+        Hypera浏览器
         <div style="text-align:right; float:right; margin-top:5px">
           <el-button size="small" @click="changeTest(10)">10K测试</el-button>
           <el-button size="small" @click="changeTest(100)">100K测试</el-button>
@@ -63,7 +63,9 @@
               this.toastDialog = true
             }
           })
-        }).catch(() => {});
+        }).catch((error) => {
+          this.$message.warning(error)
+        })
       },
     }
   }

@@ -4,26 +4,25 @@
     <div class="wrapper">
       <div class="databoard_block">
         <el-row :gutter="10">
-          <el-col :span="11">
-            <el-card style="min-height: 680px;height: calc(100vh - 120px);">
+          <el-col :span="12">
+            <el-card style="min-height: 722px;height: calc(100vh - 80px);">
               <div slot="header">
-                <span><i class="iconfont icon-ChainInfo"></i>普适链结构</span>
+                <span><i class="iconfont icon-ChainInfo"></i>链结构</span>
               </div>
-              <div class="layer">
-                <div id="tableMain">
+              <div id="tableMain">
+                <el-scrollbar style="height:100%" :native="false" class="el-menuscrollbar" ref="myScrollbar">
                   <ul id="dataTree" class="ztree"></ul>
-                </div>
+                </el-scrollbar>
               </div>
             </el-card>
           </el-col>
-          <el-col :span="13">
-            <el-card style="height: calc(45vh - 54px); min-height: 308px">
+          <el-col :span="12">
+            <el-card style="height: calc(45vh - 41px); min-height: 320px">
               <div slot="header">
-                <span><i class="iconfont icon-Up"></i>出块量</span>
+                <span><i class="iconfont icon-Up"></i>TPS</span>
               </div>
-              <blockBar id="blockBar" style="height:calc(40vh - 60px); min-height:260px; margin:0 auto"
-                :value="totalFlow" :width="LineWidth">
-              </blockBar>
+              <blockBar id="blockBar" :value="tpsLine"
+                style="height:calc(40vh - 60px); min-height:260px; margin:0 auto"></blockBar>
             </el-card>
             <div>
               <cardData></cardData>
@@ -40,12 +39,19 @@
   import 'jquery-ui'
   import "@/lib/ztree_v3/js/jquery.ztree.core.js"
   import "@/lib/ztree_v3/js/jquery.ztree.excheck.js"
+  import "@/lib/ztree_v3/js/jquery.ztree.exedit.js"
   import "@/lib/ztree_v3/css/zTreeStyle/zTreeStyle.css"
 
-  // import tree from "vue-giant-tree";
   import chooseHeader from '@/components/common/chooseHeader'
   import blockBar from '@/components/Echarts/blockBar'
   import cardData from '@/components/common/cardData'
+
+  import Vue from 'vue'
+  import router from '@/router'
+
+  import {
+    reDate
+  } from '@/lib/moment.js'
 
   import {
     mapState,
@@ -53,21 +59,30 @@
   } from 'vuex'
 
   export default {
+    name: 'DataBoard',
+
     components: {
-      // tree,
       chooseHeader,
       blockBar,
       cardData,
     },
     computed: {
       ...mapState({ //等价于上面的写法
-        chainInfo: state => _.values(state.chainInfo),
+        showChain: state => _.values(state.showChain),
+      }),
+      ...mapState({ //等价于上面的写法
+        tpsData: state => _.values(state.tpsLine),
       })
     },
     watch: { //监听值改变
-      chainInfo: {
+      showChain: {
         handler(newVal, oldVal) {
           this.getTree()
+        }
+      },
+      tpsData: {
+        handler(newVal, oldVal) {
+          this.getTPS()
         }
       },
     },
@@ -75,6 +90,7 @@
     data() {
       return {
         treeData: [],
+        collapses: ['B', 'R00'],
         setting: {
           data: {
             simpleData: {
@@ -88,21 +104,26 @@
             showLine: false,
             showTitle: false,
             addDiyDom: this.addDiyDom,
-            nameIsHTML: true,
             selectedMulti: false,
           },
           callback: {
-            onRightClick: this.zTreeOnRightClick
-            // onDblClick: this.onDblClick,
-            // onClick: this.onNodeClick
+            onRightClick: this.zTreeOnRightClick,
+            onExpand: this.zTreeOnExpand,
+            onCollapse: this.zTreeOnCollapse
           }
         },
 
-        totalFlow: [],
-        LineWidth: '600',
+        tpsLine: [],
+        timeo: 1,
+        timeStop: null, // 刷新计时
       }
     },
+
     mounted() {
+      sessionStorage.setItem('collapses', JSON.stringify(this.collapses))
+
+      this.getTPS()
+      this.updateTPS()
       this.getTree()
     },
 
@@ -114,7 +135,7 @@
             type: treeNode.type,
             chainKey: treeNode.chainKey,
             height: treeNode.height, //区块高度
-            hash: treeNode.hash, // hash 
+            // hash: treeNode.hash, // hash 
           }
         })
       },
@@ -141,80 +162,130 @@
         var editStr = '';
         editStr +=
           '<div class="chain_tree_node"><div class="tree_logo" style="background-color:' + treeNode.color + '"><h3>' +
-          treeNode.type +
-          '</h3></div><div class="tree_info"><div class="tree_info_top"> 时间 | 最近：' + parseFloat(treeNode.interval)
-          .toFixed(3) + ' s | 平均：' + parseFloat(treeNode.average).toFixed(3) +
-          ' s</div><div class="tree_info_bottom"> 区块 | 高度：<span>' +
-          // '<a style="height:18.5px;color:#409EFF" href="http://110.185.107.125:8090/blockinfo?type=' + treeNode.type +
-          '<a style="height:18.5px;color:#409EFF" href="http://localhost:8090/blockinfo?type=' + treeNode.type +
-          '&chainKey=' + treeNode.chainKey + '&height=' + treeNode.height + '">' + treeNode.height + '</a>' +
-          '</span> | TPS：' + parseFloat(treeNode.tps).toFixed(1) + ' | 交易数：' + treeNode.trans + ' | 大小：' + parseFloat(
-            treeNode.size /
-            1024).toFixed(0) + ' KB </div></div></div>'
-
+          treeNode.type + '<span style="font-size:12px">' + treeNode.chainKey + '</span>' +
+          '</h3></div><div class="tree_info"><div class="tree_info_top"> 时间 | 最近：' + this.getRecently(treeNode
+            .recently) +
+          ' s | 平均：' + parseFloat(treeNode.average).toFixed(3) +
+          ' s</div><div class="tree_info_bottom"> 区块 | 高度：<a style="color:#409EFF;height:24px" id="addBtn_' + treeNode.tId +
+          '" onclick="this.blur()">' + treeNode.height + '</a> | TPS：' + parseFloat(treeNode.tps).toFixed(0) +
+          ' | 交易数：' + treeNode.trans + ' | 大小：' + parseFloat(
+            treeNode.size / 1024).toFixed(0) + ' KB </div></div></div>'
         aObj.append(editStr);
+
+        var btn = $("#addBtn_" + treeNode.tId);
+        if (btn) btn.bind("click", function () {
+          let vm = new Vue({
+            router,
+            methods: {
+              turnToBlockInfo() {
+                this.$router.push({
+                  path: '/blockinfo',
+                  query: {
+                    type: treeNode.type,
+                    chainKey: treeNode.chainKey,
+                    height: treeNode.height, //区块高度
+                    // hash: treeNode.hash, // hash 
+                  }
+                })
+              },
+            },
+          })
+          vm.turnToBlockInfo();
+          return false;
+        })
       },
 
-      // 展开或关闭所有节点
-      expandAndCloseNode: function (e) {
-        var zTree = $.fn.zTree.getZTreeObj("tree");
-        if (e) {
-          this.isShowicon2 = false;
-          this.isShowicon1 = true;
-        } else {
-          this.isShowicon2 = true;
-          this.isShowicon1 = false;
+      // 展开
+      zTreeOnExpand: function (event, treeId, treeNode) {
+        this.collapses = JSON.parse(sessionStorage.getItem('collapses'))
+        if (treeNode.id != 'B') {
+          this.collapses = ['B']
         }
-        zTree.expandAll(e);
+        this.collapses.push(treeNode.id)
+        sessionStorage.setItem('collapses', JSON.stringify(this.collapses))
+
+        this.$store.commit('getTree')
+
+        // 滚轮定位
+        let height = 0
+        height = parseInt((treeNode.getIndex() + 1) * 55)
+        this.$nextTick(() => {
+          if (this.$refs['myScrollbar'] != undefined) {
+            if (treeNode.type == 'B') {
+              this.$refs['myScrollbar'].wrap.scrollTop = 0;
+            } else {
+              this.$refs['myScrollbar'].wrap.scrollTop = height;
+            }
+          }
+        })
+      },
+      // 关闭
+      zTreeOnCollapse: function (event, treeId, treeNode) {
+        if (sessionStorage.getItem('collapses')) {
+          this.collapses = JSON.parse(sessionStorage.getItem('collapses'))
+          var index = this.collapses.indexOf(treeNode.id);
+          if (index > -1) {
+            this.collapses.splice(index, 1);
+          }
+          sessionStorage.setItem('collapses', JSON.stringify(this.collapses))
+        }
+        // this.$store.commit('getTree')
       },
 
       getTree() {
+        clearInterval(this.timeStop); //清除定时器
         this.treeData = [];
-        let chainInfo = _.clone(this.$store.state.chainInfo);
-
-        let relays = {};
-        let shards = [];
-
-        _.mapValues(chainInfo, (item) => {
-          item.id = item.type + item.chainKey
-          item.name = item.type + item.chainKey
-          item.tps = 0.0
-          switch (item.type) {
-            case 'B':
-              item.pid = 0
-              item.color = '#0099cc'
-              item.children = []
-              break;
-
-            case 'R':
-              item.pid = 'B'
-              item.color = '#52aac7'
-              item.children = []
-              relays[item.name] = item
-              break;
-
-            case 'S':
-              if (item.interval == 0) {
-                item.tps = 0.0
-              } else {
-                item.tps = parseFloat(item.trans / item.interval)
-              }
-              item.pid = 'R' + item.chainKey.substring(0, 2)
-              item.color = '#b7d0d9'
-              shards.push(item);
-              break;
-          }
-        })
-
-        _.each(shards, (item) => {
-          if (relays[item.pid]) {
-            relays[item.pid].tps = parseFloat(relays[item.pid].tps) + parseFloat(item.tps)
-            chainInfo['B'].tps = parseFloat(chainInfo['B'].tps) + parseFloat(item.tps)
-          }
-        })
-        this.treeData = _.values(chainInfo)
-        $.fn.zTree.init($("#dataTree"), this.setting, this.treeData).expandAll(true);
+        this.treeData = this.$store.state.showChain
+        $.fn.zTree.init($("#dataTree"), this.setting, this.treeData);
+        this.getTime()
       },
+
+      getTPS() {
+        this.tpsLine = this.$store.state.tpsLine
+      },
+
+      updateTPS() {
+        let tpso = 5
+        setInterval(() => {
+          tpso--;
+          let timeS = reDate(new Date(), 'HH:mm:ss').substring(reDate(new Date(), 'HH:mm:ss').length - 1,
+            reDate(
+              new Date(), 'HH:mm:ss').length)
+          if (timeS == '0' || timeS == '5') {
+            if (tpso > 0) {} else {
+              let obj = {
+                time: reDate(new Date(), 'HH:mm:ss'),
+                tps: this.$store.state.chainInfo['B'].tps
+              }
+              this.$store.commit('updateTPS', obj)
+              tpso = 5
+            }
+          } else {
+            tpso = 1
+          }
+        }, 1000)
+      },
+
+      getTime() {
+        this.timeo = 1
+        this.timeStop = setInterval(() => {
+          this.timeo--;
+          if (this.timeo > 0) {} else {
+            this.$store.commit('getTree')
+          }
+        }, 1000)
+      },
+
+      getRecently(val) {
+        if (val <= 60) {
+          return val
+        } else if (val <= 3600) {
+          return parseInt(val / 60) + 'm' + (val % 60)
+        } else {
+          return parseInt(val / 3600) + 'h' + parseInt((val % 3600) / 60) + 'm' + (val % 60)
+        }
+      },
+
     }
   }
 </script>
@@ -225,7 +296,6 @@
     padding: 0;
     height: calc(100vh - 170px);
     min-height: 630px;
-    overflow-y: auto;
   }
 
   .ztree li a {
@@ -272,7 +342,7 @@
     overflow: hidden;
 
     .tree_logo {
-      width: 48px;
+      width: 60px;
       height: 24px;
       padding: 12px 0;
       text-align: center;
@@ -280,13 +350,13 @@
 
       h3 {
         color: #fff;
-        font-size: 18px;
+        font-size: 14px;
       }
     }
 
     .tree_info {
       float: right;
-      width: calc(100% - 50px);
+      width: calc(100% - 70px);
       height: 48px;
       border-left: 1px solid rgb(226, 226, 226);
       border-right: 1px solid rgb(226, 226, 226);
@@ -300,16 +370,16 @@
 
     .tree_info_top {
       height: 22.5px;
-      width: calc(100% - 110px);
-      min-width: 430px;
+      width: calc(100% - 70px);
+      min-width: 431px;
       border-top: 1px solid rgb(226, 226, 226);
       border-bottom: 1px solid rgb(226, 226, 226);
     }
 
     .tree_info_bottom {
       height: 22.5px;
-      width: calc(100% - 110px);
-      min-width: 430px;
+      width: calc(100% - 70px);
+      min-width: 431px;
       border-bottom: 1px solid rgb(226, 226, 226);
     }
   }

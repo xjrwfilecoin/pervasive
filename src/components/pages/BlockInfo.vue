@@ -85,11 +85,11 @@
             <lockBlock :blockInfo="blockInfo"></lockBlock>
           </el-col>
 
-          <el-col v-show="blockSearch.type != 'B'" :span="relays ? 12 : 24">
+          <el-col v-show="!beconds" :span="relays ? 12 : 24">
             <upStream :blockInfo="blockInfo" style="margin-top: 10px"></upStream>
           </el-col>
 
-          <el-col v-show="blockSearch.type != 'S'" :span="relays ? 12 : 24">
+          <el-col :span="relays ? 12 : 24">
             <downStream :blockInfo="blockInfo" style="margin-top: 10px"></downStream>
           </el-col>
         </el-row>
@@ -111,6 +111,8 @@
   import moment from 'moment'
 
   export default {
+    name: 'BlockInfo',
+
     components: {
       Header,
       lockBlock,
@@ -118,13 +120,23 @@
       downStream,
       toastDialog
     },
+    watch: {
+      $route() {
+        if (this.$route.path == '/blockinfo') {
+          this.blockSearch.type = this.$router.currentRoute.query.type
+          this.blockSearch.chainKey = this.$router.currentRoute.query.chainKey
+          this.blockSearch.height = this.$router.currentRoute.query.height + ''
+          this.getBlockInfo()
+        }
+      },
+    },
 
     data() {
       return {
         toastDialog: false,
         message: '',
 
-        Title: '普适链区块信息',
+        Title: '链区块信息',
         hash: '',
         typeOptions: [{
           value: 'B',
@@ -191,21 +203,9 @@
 
         expands: [],
         upStream: [],
+        beconds: false,
         relays: false, // 是否显示下行交易
-        upList: [{
-            type: 'Rn-->R1',
-            hash: 'bafy2bzacedgsilaxnyyf7h25waac357gqzovdiqfyftnc4ml5vsu5e3mw3ajg',
-            trading: '123'
-          },
-          {
-            type: 'R1',
-            hash: 'bafy2bzacedgsilaxnyyf7h25waac357gqzovdiqfyftnc4ml5vsu5e3mw3ajg'
-          },
-          {
-            type: 'R1',
-            hash: 'bafy2bzacedgsilaxnyyf7h25waac357gqzovdiqfyftnc4ml5vsu5e3mw3ajg'
-          }
-        ]
+        // shards: false
       }
     },
     computed: {
@@ -216,11 +216,11 @@
       }
     },
 
-    created() {
+    mounted() {
       this.blockSearch.type = this.$router.currentRoute.query.type
       this.blockSearch.chainKey = this.$router.currentRoute.query.chainKey
       this.blockSearch.height = this.$router.currentRoute.query.height + ''
-      this.hash = this.$router.currentRoute.query.hash
+      // this.hash = this.$router.currentRoute.query.hash
       this.getBlockInfo()
     },
 
@@ -251,20 +251,31 @@
         }
         this.webSocket.sendRequest('blockInfo', params).then((result) => {
           if (JSON.stringify(result) != "{}") {
-            if (this.blockSearch.type == 'R') {
-              this.relays = true
-            } else {
+            if (this.blockSearch.type == 'B') {
+              this.beconds = true
               this.relays = false
+              // this.shards = false
+            } else if (this.blockSearch.type == 'R') {
+              this.beconds = false
+              this.relays = true
+              // this.shards = false
+            } else if (this.blockSearch.type == 'S') {
+              this.beconds = false
+              this.relays = false
+              // this.shards = true
             }
             this.blockInfo = result
           } else {
             this.message = '查询不到数据'
             this.toastDialog = true
           }
+        }).catch((error) => {
+          this.$message.warning(error)
         })
       },
 
       getChainKey(val) {
+        this.search = false
         if (val == 'B') {
           this.blockSearch.chainKey = ''
         }

@@ -7,9 +7,9 @@ const originalPush = Router.prototype.push;
 Router.prototype.push = function push(location) {
   return originalPush.call(this, location).catch(err => err)
 };
-if (window.localStorage.getItem('bindUrl')) {
-  store.commit("bindUrl", window.localStorage.getItem('bindUrl'))
-}
+// if (window.localStorage.getItem('bindUrl')) {
+//   store.commit("bindUrl", window.localStorage.getItem('bindUrl'))
+// }
 import roleRouter from './rolerouter'
 
 Vue.use(Router);
@@ -20,11 +20,12 @@ export default new Router({
     ...roleRouter,
     {
       path: '/',
+      name: 'DataBoard',
       redirecet: '/databoard'
     },
     {
       path: '/databoard',
-      name: '首页',
+      name: 'DataBoard',
       component: resolve => require(['./components/pages/DataBoard.vue'], resolve)
     },
     {

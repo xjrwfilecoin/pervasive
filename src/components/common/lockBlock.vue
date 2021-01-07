@@ -89,6 +89,8 @@
                 this.children = result.detail.downStream
               }
             }
+          }).catch((error) => {
+            this.$message.warning(error)
           })
         }
       },

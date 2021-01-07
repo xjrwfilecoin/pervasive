@@ -83,18 +83,22 @@ let socketInit = () => {
   store.state.chainInfo = {}
   store.state.averageInfo = {}
   store.state.apiCount = 0
+  store.state.showChain = []
   webSocket.startUp("ws://" + BASE_URL + "/v1.0/wsConn").then(() => {
     console.log('连接成功了~~~');
 
     // 订阅
     return webSocket.sendSubscribe('block', {}).then(() => {
-     
+
       webSocket.sendRequest('chainInfo', {}).then((result) => {
+        store.commit('inintTPS')
+
         let obj = {};
         let ban_obj = {};
         _.each(result.data, item => {
           item.average = 0.0
-          // item.tps = 0.0
+          item.tps = 0.0
+          item.recently = 0
           obj[item.type + item.chainKey] = item;
 
           ban_obj[item.type + item.chainKey] = {
@@ -103,9 +107,8 @@ let socketInit = () => {
             num: 0
           }
         });
-
         store.commit('updateBalance', ban_obj)
-        store.commit('inintChain', obj)    
+        store.commit('inintChain', obj)
       })
     })
 
@@ -117,6 +120,7 @@ let socketInit = () => {
 
   });
 }
+
 webSocket.on('onClose', () => {
   socketInit();
 })

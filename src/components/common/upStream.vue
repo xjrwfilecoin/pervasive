@@ -25,10 +25,10 @@
                   {{ scope.row.fromShard + '->' + scope.row.toShard }}
                 </template>
               </el-table-column>
-              <el-table-column prop="hash" label="哈希值" align="center" show-overflow-tooltip :min-width="relays ? 370 : 790">
+              <el-table-column prop="hash" label="哈希值" align="center" show-overflow-tooltip
+                :min-width="relays ? 370 : 790">
               </el-table-column>
-              <el-table-column prop="amount" label="交易数量" align="center"
-                :min-width="relays ? 95 : 190">
+              <el-table-column prop="amount" label="交易数量" align="center" :min-width="relays ? 95 : 190">
                 <template slot-scope="scope">
                   <el-button type="text" @click="turnToTrad(scope.row)">{{ scope.row.trans }}</el-button>
                 </template>
@@ -111,6 +111,8 @@
             if (JSON.stringify(result) != "{}") {
               this.children = result
             }
+          }).catch((error) => {
+            this.$message.warning(error)
           })
         }
       },

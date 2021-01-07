@@ -19,6 +19,7 @@ class wsClinet extends EventEmitter {
                 this.client.close();
                 store.commit('updateState', {});
             }
+
             return new P((resolve, reject) => {
                 this.client = new WebSocket(url);
                 this.client.onopen = () => {
@@ -29,7 +30,7 @@ class wsClinet extends EventEmitter {
 
                 this.client.onmessage = (callback) => {
                     let msg = JSON.parse(callback.data)
-                    store.commit("updateApiCount", "sub");
+
                     if (msg.error) {
                         Message.warning(msg.error.message)
                         return
@@ -42,6 +43,7 @@ class wsClinet extends EventEmitter {
                                 let obj = store.state.chainInfo || {};
                                 let update_obj = {}
                                 _.each(item, i => {
+                                    i.recently = -1
                                     if (obj[i.type + i.chainKey] && obj[i.type + i.chainKey].height > i.height) {
                                         this.client.close();
                                     }
@@ -62,13 +64,19 @@ class wsClinet extends EventEmitter {
                     }
                     //response
                     if ((msg.event || msg.uri) && msg.msgId) {
+                        store.commit("updateApiCount", "sub");
                         this.emit(msg.msgId, msg);
                     }
                 }
 
                 this.client.onclose = () => {
+                    console.log('准备关闭')
                     store.commit('ws_State', this.client.readyState);
                     this.emit('onClose', false);
+                }
+
+                this.client.onerror = (event) => {
+                    console.log('error', event)
                 }
 
                 this.timer = setTimeout(() => {
@@ -87,8 +95,8 @@ class wsClinet extends EventEmitter {
                 let msgId = Math.random().toString(36).substr(2, 8);
 
                 let to = () => {
-                    this.removeAllListeners(msgId);
                     reject('timeout');
+                    this.removeAllListeners(msgId);                  
                 };
 
                 this.once(msgId, (result) => {
@@ -106,14 +114,14 @@ class wsClinet extends EventEmitter {
                     }
 
                 });
-                let timer = setTimeout(to, 5000);
+                let timer = setTimeout(to, 10000);
 
                 let data = {
                     body: body,
                     msgId: msgId
                 };
                 data[type] = value;
-                
+
                 this.client.send(JSON.stringify(data))
             }
             return new P(fun.bind(this))

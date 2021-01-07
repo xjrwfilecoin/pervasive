@@ -1,21 +1,20 @@
 <template>
-    <div :id="id" :style="{width:width}" class="charts chart-bar"></div>
+    <div :id="id" style="width:600px;height:calc(40vh - 60px); min-height:260px; margin:0 auto"
+        class="charts chart-bar"></div>
 </template>
 
 <script>
+    import {
+        mapState,
+        mapActions
+    } from 'vuex'
     import echarts from 'echarts'
 
     export default {
         name: 'ChartLine',
         props: {
             id: String,
-            width: {
-                type: String,
-                default: '600px'
-            },
             value: Array,
-            text: String,
-            subtext: String
         },
         data() {
             return {
@@ -25,19 +24,10 @@
         },
         watch: {
             value: {
-                handler(newValue, oldValue) {
-                    this.value = newValue; //把新值赋值给我们的属性数据
-                    this.initChart(); //刷新echarts图表
-                },
-                deep: true
+                handler(newVal, oldVal) {
+                    this.initChart()
+                }
             },
-            width: {
-                handler(newValue, oldValue) {
-                    this.width = newValue; //把新值赋值给我们的属性数据
-                    this.initChart(); //刷新echarts图表
-                },
-                deep: true
-            }
         },
         methods: {
             resize() {
@@ -48,10 +38,6 @@
                     let xAxisData = this.value.map(_ => _.name)
                     let yAxisData = this.value.map(_ => _.value)
                     let option = {
-                        title: {
-                            // text: "中继链-01",
-                            subtext: "运行曲线图"
-                        },
                         tooltip: {
                             trigger: "axis",
                             axisPointer: { // 坐标轴指示器，坐标轴触发有效
@@ -59,34 +45,41 @@
                             }
                         },
                         grid: {
-                            left: '5%',
-                            right: '3%',
+                            left: '11%',
+                            right: '4%',
                             bottom: '10%'
                         },
-
-                        xAxis: {
-                            type: "category",
-                            data: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月",
-                                "12月"],
-                            axisTick: {
-                                alignWithLabel: true
-                            }
-                            // data: xAxisData,
-                        },
-                        yAxis: {
+                        xAxis: [{
+                            type: 'category',
+                            data: xAxisData,
+                        }],
+                        yAxis: [{
+                            type: 'value',
+                            axisLine: false,
+                            axisTick: false,
+                            min: 0,
+                            // max: 20000,
+                            splitNumber: 4,
                             axisLabel: {
                                 show: true,
+                                interval: 'auto',
+                                formatter: function (value) {
+                                    if (parseInt(value) < 1000) {
+                                        return value
+                                    } else {
+                                        return parseFloat(value / 1000).toFixed(0) + ' K'
+                                    }
+                                },
                                 textStyle: {
-                                    color: "black"
+                                    color: "black",
+                                    fontFamily: 'verdana',
+                                    fontSize: 10,
+                                    fontStyle: 'normal',
                                 }
                             },
-                            name: "",
-                            type: "value",
-                            axisLine: false,
-                            axisTick: false
-                        },
+                        }],
                         series: [{
-                            type: "bar",
+                            type: "line",
                             barWidth: '50%',
                             itemStyle: {
                                 color: new echarts.graphic.LinearGradient(
@@ -106,16 +99,17 @@
                                     ]
                                 )
                             },
-                            name: "中继数",
-                            data: [820, 932, 901, 934, 1290, 1330, 1320, 820, 932, 901, 934, 1290],
-                            // data: yAxisData,
+                            name: "TPS",
+                            data: yAxisData,
                         }]
+                    };
+                    // document.getElementById(this.id).style.width = this.width + "px";
+                    if (document.getElementById('blockBar')) {
+                        this.dom = echarts.init(document.getElementById('blockBar'))
+                        this.dom.setOption(option)
                     }
-                    document.getElementById(this.id).style.width = this.width + "px";
-                    this.dom = echarts.init(document.getElementById(this.id))
-                    this.dom.setOption(option)
                     window.addEventListener("resize", this.dom.resize); //添加 监听屏幕缩放
-                }, 1000)
+                }, 2000)
             }
         },
         mounted() {
