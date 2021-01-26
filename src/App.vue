@@ -6,29 +6,29 @@
   </div>
 </template>
 
+<script>
+  export default {
+    data() {
+      return {
+
+      }
+    },
+
+    created() { //页面刷新store数据备份
+      //在页面加载时读取localStorage里的状态信息
+      let parameters = localStorage.getItem("parameters")
+      if (parameters != null && parameters != undefined && parameters != '') {
+        this.$store.state.parameters = JSON.parse(parameters);
+      }
+
+      //在页面刷新时将vuex里的信息保存到localStorage里
+      window.addEventListener("beforeunload", () => {
+        localStorage.setItem("parameters", JSON.stringify(this.$store.state.parameters))
+      })
+    }
+  }
+</script>
+
 <style lang="scss">
   @import "assets/css/main.css";
-  /*.el-table td, .el-table th{*/
-  /*  padding: 8px 0 !important;*/
-  /*}*/
-  // .el-tabs__content {
-  //   padding-left: 20px;
-  //   padding-top: 20px;
-  // }
-  // .el-upload--text {
-  //   width: 156px;
-  //   height: 156px;
-  //   border-radius: 50%;
-  // }
-  // .el-dialog__footer {
-  //   border-top: 1px solid #e7e7e7;
-  //   padding: 15px 15px 15px 15px !important;
-  // }
-  // .el-dialog__header {
-  //   padding: 15px 15px 15px 15px !important;
-  //   border-bottom: 1px solid #e7e7e7;
-  //   .el-dialog__title {
-  //     font-size: 16px;
-  //   }
-  // }
 </style>

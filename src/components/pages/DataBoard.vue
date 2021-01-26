@@ -9,17 +9,15 @@
               <div slot="header">
                 <span><i class="iconfont icon-ChainInfo"></i>链结构</span>
               </div>
-              <div id="tableMain">
-                <el-scrollbar style="height:100%" :native="false" class="el-menuscrollbar" ref="myScrollbar">
-                  <ul id="dataTree" class="ztree"></ul>
-                </el-scrollbar>
+              <div id="tableList" style="height: calc(100vh - 170px);overflow-y:scroll">
+                <ul id="dataTree" class="ztree"></ul>
               </div>
             </el-card>
           </el-col>
           <el-col :span="12">
             <el-card style="height: calc(45vh - 41px); min-height: 320px">
               <div slot="header">
-                <span><i class="iconfont icon-Up"></i>TPS</span>
+                <span><i class="iconfont icontubiaozhexiantu"></i>TPS</span>
               </div>
               <blockBar id="blockBar" :value="tpsLine"
                 style="height:calc(40vh - 60px); min-height:260px; margin:0 auto"></blockBar>
@@ -48,6 +46,7 @@
 
   import Vue from 'vue'
   import router from '@/router'
+  import store from '@/store'
 
   import {
     reDate
@@ -129,15 +128,12 @@
 
     methods: {
       zTreeOnRightClick: function (e, treeId, treeNode) {
-        this.$router.push({
-          path: '/blockinfo',
-          query: {
-            type: treeNode.type,
-            chainKey: treeNode.chainKey,
-            height: treeNode.height, //区块高度
-            // hash: treeNode.hash, // hash 
-          }
-        })
+        this.$store.commit("setParameters", {
+          type: treeNode.type,
+          chainKey: treeNode.chainKey,
+          height: treeNode.height, //区块高度
+        });
+        this.$router.push('/blockinfo')
       },
 
       // 添加条目数
@@ -166,7 +162,8 @@
           '</h3></div><div class="tree_info"><div class="tree_info_top"> 时间 | 最近：' + this.getRecently(treeNode
             .recently) +
           ' s | 平均：' + parseFloat(treeNode.average).toFixed(3) +
-          ' s</div><div class="tree_info_bottom"> 区块 | 高度：<a style="color:#409EFF;height:24px" id="addBtn_' + treeNode.tId +
+          ' s</div><div class="tree_info_bottom"> 区块 | 高度：<a style="color:#409EFF;height:24px" id="addBtn_' + treeNode
+          .tId +
           '" onclick="this.blur()">' + treeNode.height + '</a> | TPS：' + parseFloat(treeNode.tps).toFixed(0) +
           ' | 交易数：' + treeNode.trans + ' | 大小：' + parseFloat(
             treeNode.size / 1024).toFixed(0) + ' KB </div></div></div>'
@@ -176,17 +173,15 @@
         if (btn) btn.bind("click", function () {
           let vm = new Vue({
             router,
+            store,
             methods: {
               turnToBlockInfo() {
-                this.$router.push({
-                  path: '/blockinfo',
-                  query: {
-                    type: treeNode.type,
-                    chainKey: treeNode.chainKey,
-                    height: treeNode.height, //区块高度
-                    // hash: treeNode.hash, // hash 
-                  }
-                })
+                this.$store.commit("setParameters", {
+                  type: treeNode.type,
+                  chainKey: treeNode.chainKey,
+                  height: treeNode.height, //区块高度
+                });
+                this.$router.push('/blockinfo')
               },
             },
           })
@@ -210,12 +205,11 @@
         let height = 0
         height = parseInt((treeNode.getIndex() + 1) * 55)
         this.$nextTick(() => {
-          if (this.$refs['myScrollbar'] != undefined) {
-            if (treeNode.type == 'B') {
-              this.$refs['myScrollbar'].wrap.scrollTop = 0;
-            } else {
-              this.$refs['myScrollbar'].wrap.scrollTop = height;
-            }
+          var div = document.getElementById('tableList');
+          if (treeNode.type == 'B') {
+            div.scrollTop = 0
+          } else {
+            div.scrollTop = height
           }
         })
       },
@@ -229,7 +223,6 @@
           }
           sessionStorage.setItem('collapses', JSON.stringify(this.collapses))
         }
-        // this.$store.commit('getTree')
       },
 
       getTree() {
@@ -241,7 +234,11 @@
       },
 
       getTPS() {
-        this.tpsLine = this.$store.state.tpsLine
+        if (this.$store.state.tpsLine && this.$store.state.tpsLine.length == 180) {
+          this.tpsLine = this.$store.state.tpsLine
+        } else {
+          this.$store.commit('inintTPS')
+        }
       },
 
       updateTPS() {
@@ -253,12 +250,22 @@
               new Date(), 'HH:mm:ss').length)
           if (timeS == '0' || timeS == '5') {
             if (tpso > 0) {} else {
-              let obj = {
-                time: reDate(new Date(), 'HH:mm:ss'),
-                tps: this.$store.state.chainInfo['B'].tps
+              if (this.webSocket.client && this.webSocket.client.readyState == 1 && this.$store.state.chainInfo[
+                  'B'] && this.$store.state.chainInfo['B'].tps) {
+                let obj = {
+                  time: reDate(new Date(), 'HH:mm:ss'),
+                  tps: this.$store.state.chainInfo['B'].tps
+                }
+                this.$store.commit('updateTPS', obj)
+                tpso = 5
+              } else {
+                let obj = {
+                  time: reDate(new Date(), 'HH:mm:ss'),
+                  tps: 0
+                }
+                this.$store.commit('updateTPS', obj)
+                tpso = 5
               }
-              this.$store.commit('updateTPS', obj)
-              tpso = 5
             }
           } else {
             tpso = 1

@@ -3,7 +3,7 @@
     <Header class="main_header" :Title="Title"></Header>
     <div class="wrapper">
       <div class="block_search">
-        <el-form :inline="true" :model="blockSearch" ref="blockSearch" size="mini">
+        <el-form :inline="true" ref="blockSearch" size="mini">
           <el-form-item label="区块类型：">
             <el-select v-model="blockSearch.type" placeholder="请选择" style="width:150px" @change="getChainKey">
               <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value">
@@ -12,13 +12,14 @@
           </el-form-item>
           <el-divider direction="vertical"></el-divider>
           <el-form-item label="链编号：">
-            <el-input v-model="blockSearch.chainKey" placeholder="请输入链编号" style="width:150px" maxlength="4"
+            <el-input v-model="blockSearch.chainKey" placeholder="请输入链编号" style="width:150px"
+              :maxlength="blockSearch.type=='R'? 2:4" onkeyup="value=value.replace(/[^0-9a-fA-F]/g,'')"
               :disabled="blockSearch.type=='B'"></el-input>
           </el-form-item>
           <el-divider direction="vertical"></el-divider>
           <el-form-item label="区块高度：">
             <el-input v-model="blockSearch.height" placeholder="请输入区块高度" style="width:250px"
-              onkeyup="value=value.replace(/[^\d]/g,'')"></el-input>
+              onkeyup="value=value.replace(/[^\d]/g,'')" maxlength="10"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" size="mini" @click="getBlockInfo()">查询</el-button>
@@ -59,7 +60,7 @@
               </div> -->
               <div class="mine_info">
                 <p>区块大小
-                  <span class="af">{{ blockInfo.size }} KB</span>
+                  <span class="af">{{ parseFloat(blockInfo.size / 1024).toFixed(0) }} KB</span>
                 </p>
               </div>
               <div class="mine_info">
@@ -123,9 +124,10 @@
     watch: {
       $route() {
         if (this.$route.path == '/blockinfo') {
-          this.blockSearch.type = this.$router.currentRoute.query.type
-          this.blockSearch.chainKey = this.$router.currentRoute.query.chainKey
-          this.blockSearch.height = this.$router.currentRoute.query.height + ''
+          let parameters = this.$store.getters.parameters;
+          this.blockSearch.type = parameters.type
+          this.blockSearch.chainKey = parameters.chainKey
+          this.blockSearch.height = parameters.height + ''
           this.getBlockInfo()
         }
       },
@@ -217,10 +219,10 @@
     },
 
     mounted() {
-      this.blockSearch.type = this.$router.currentRoute.query.type
-      this.blockSearch.chainKey = this.$router.currentRoute.query.chainKey
-      this.blockSearch.height = this.$router.currentRoute.query.height + ''
-      // this.hash = this.$router.currentRoute.query.hash
+      let parameters = this.$store.getters.parameters;
+      this.blockSearch.type = parameters.type
+      this.blockSearch.chainKey = parameters.chainKey
+      this.blockSearch.height = parameters.height + ''
       this.getBlockInfo()
     },
 
@@ -247,24 +249,21 @@
           type: this.blockSearch.type,
           chainKey: this.blockSearch.chainKey,
           height: parseInt(this.blockSearch.height),
-          // hash: this.hash
         }
         this.webSocket.sendRequest('blockInfo', params).then((result) => {
           if (JSON.stringify(result) != "{}") {
             if (this.blockSearch.type == 'B') {
               this.beconds = true
               this.relays = false
-              // this.shards = false
             } else if (this.blockSearch.type == 'R') {
               this.beconds = false
               this.relays = true
-              // this.shards = false
             } else if (this.blockSearch.type == 'S') {
               this.beconds = false
               this.relays = false
-              // this.shards = true
             }
             this.blockInfo = result
+            this.$store.commit('setBlockInfo', result)
           } else {
             this.message = '查询不到数据'
             this.toastDialog = true
@@ -282,7 +281,9 @@
       },
 
       clearSearch() {
-        this.blockSearch = {}
+        this.blockSearch.type = ''
+        this.blockSearch.chainKey = ''
+        this.blockSearch.height = ''
       },
 
       closeDialog() {

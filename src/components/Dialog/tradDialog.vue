@@ -34,7 +34,7 @@
       </div>
       <div class="mine_info">
         <p>交易费用
-          <span class="af">{{ tranForm.amount }} FIL</span>
+          <span class="af">{{ tranForm.amount }} ME</span>
         </p>
       </div>
       <!-- <div class="mine_info">

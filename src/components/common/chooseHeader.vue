@@ -2,7 +2,7 @@
   <div class="headerC">
     <div class="wrapper">
       <div class="header">
-        Hypera浏览器
+        MeChain浏览器
         <div style="text-align:right; float:right; margin-top:5px">
           <el-button size="small" @click="changeTest(10)">10K测试</el-button>
           <el-button size="small" @click="changeTest(100)">100K测试</el-button>
@@ -29,6 +29,7 @@
       return {
         toastDialog: false,
         message: '',
+        timeS: ''
       }
     },
 
@@ -37,6 +38,13 @@
 
     methods: {
       changeTest(val) {
+        if (this.timeS > 0) {
+          this.$message({
+            type: 'warning',
+            message: '请' + this.timeS + 's 后重试！'
+          });
+          return
+        }
         let params = {
           type: 'S', //[B|R|S], 链类型
           cmd: {
@@ -58,15 +66,29 @@
                 type: 'success',
                 message: '操作成功!'
               });
+              this.setTime()
             } else {
               this.message = '15秒内只能测试一次'
               this.toastDialog = true
             }
           })
         }).catch((error) => {
-          this.$message.warning(error)
+          if (error != 'cancel') {
+            this.$message.warning(error)
+          }
         })
       },
+
+      setTime() {
+        this.timeS = 15
+        let timeStop = setInterval(() => {
+          this.timeS--;
+          if (this.timeS > 0) {} else {
+            this.timeS = '';
+            clearInterval(timeStop); //清除定时器
+          }
+        }, 1000)
+      }
     }
   }
 </script>

@@ -17,17 +17,19 @@
         </div> -->
       </div>
 
-      <el-table ref="downStream" :data="blockInfo.detail.downStream" border size="mini"
-        :header-cell-style="{background:'#F0F4FB',color:'#2c2c2c'}"
-        style="height: calc(55vh - 170px);min-height: 269px; margin-top:10px; overflow: auto;">
-        <el-table-column label="跨中继交易组" align="center" min-width="95">
-          <template slot-scope="scope">
-            {{ scope.row.fromkey + '->' +  scope.row.tokey }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="hash" label="哈希值" align="center" min-width="420">
-        </el-table-column>
-      </el-table>
+      <div class="stream_table">
+        <el-table ref="downStream" :data="blockInfo.detail.downStream" border size="mini"
+          :header-cell-style="{background:'#F0F4FB',color:'#2c2c2c'}"
+          style="height: calc(55vh - 170px);min-height: 269px; margin-top:10px; overflow: auto;">
+          <el-table-column label="跨中继交易组" align="center" min-width="95">
+            <template slot-scope="scope">
+              {{ scope.row.fromkey + '->' +  scope.row.tokey }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="hash" label="哈希值" align="center" min-width="420">
+          </el-table-column>
+        </el-table>
+      </div>
     </el-card>
   </div>
 </template>
@@ -65,6 +67,15 @@
     methods: {}
   }
 </script>
+
+<style lang="scss">
+  .stream_table {
+    .el-table .cell {
+      padding-right: 0;
+      padding-left: 0;
+    }
+  }
+</style>
 
 <style lang="scss" scoped>
   .downHash {

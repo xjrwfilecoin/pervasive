@@ -14,36 +14,38 @@
         </div>
       </div>
 
-      <el-table :data="upStream" ref="upStream" border size="mini" @expand-change="getChildren" :row-key="getRowKeys"
-        :expand-row-keys="expands" :header-cell-style="{background:'#F0F4FB',color:'#2c2c2c'}"
-        style="height: calc(55vh - 170px);min-height: 269px; margin-top:10px; overflow: auto;">
-        <el-table-column type="expand" v-if="blockInfo.type == 'S'">
-          <template slot-scope="props">
-            <el-table :data="children" border size="mini" :header-cell-style="{background:'#F0F4FB',color:'#2c2c2c'}">
-              <el-table-column label="交易" align="center" :min-width="relays ? 95 : 190">
-                <template slot-scope="scope">
-                  {{ scope.row.fromShard + '->' + scope.row.toShard }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="hash" label="哈希值" align="center" show-overflow-tooltip
-                :min-width="relays ? 370 : 790">
-              </el-table-column>
-              <el-table-column prop="amount" label="交易数量" align="center" :min-width="relays ? 95 : 190">
-                <template slot-scope="scope">
-                  <el-button type="text" @click="turnToTrad(scope.row)">{{ scope.row.trans }}</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-          </template>
-        </el-table-column>
-        <el-table-column :label="tableLabel" align="center" :min-width="relays ? 95 : 190">
-          <template slot-scope="scope">
-            {{ scope.row.fromkey + '->' +  scope.row.tokey }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="hash" label="哈希值" align="center" :min-width="relays ? 370 : 790">
-        </el-table-column>
-      </el-table>
+      <div class="stream_table">
+        <el-table :data="upStream" ref="upStream" border size="mini" @expand-change="getChildren" :row-key="getRowKeys"
+          :expand-row-keys="expands" :header-cell-style="{background:'#F0F4FB',color:'#2c2c2c'}"
+          style="height: calc(55vh - 170px);min-height: 269px; margin-top:10px; overflow: auto;">
+          <el-table-column type="expand" v-if="blockInfo.type == 'S'">
+            <template slot-scope="props">
+              <el-table :data="children" border size="mini" :header-cell-style="{background:'#F0F4FB',color:'#2c2c2c'}">
+                <el-table-column label="交易" align="center" :min-width="relays ? 95 : 190">
+                  <template slot-scope="scope">
+                    {{ scope.row.fromShard + '->' + scope.row.toShard }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="hash" label="哈希值" align="center" show-overflow-tooltip
+                  :min-width="relays ? 370 : 790">
+                </el-table-column>
+                <el-table-column prop="amount" label="交易数量" align="center" :min-width="relays ? 95 : 190">
+                  <template slot-scope="scope">
+                    <el-button type="text" @click="turnToTrad(scope.row)">{{ scope.row.trans }}</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </template>
+          </el-table-column>
+          <el-table-column :label="tableLabel" align="center" :min-width="relays ? 95 : 190">
+            <template slot-scope="scope">
+              {{ scope.row.fromkey + '->' +  scope.row.tokey }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="hash" label="哈希值" align="center" :min-width="relays ? 370 : 790">
+          </el-table-column>
+        </el-table>
+      </div>
     </el-card>
   </div>
 </template>
@@ -118,28 +120,24 @@
       },
 
       turnToTrad(row) {
-        this.$router.push({
-          path: '/tradinginfo',
-          query: {
-            // type: this.blockInfo.type,
-            chainKey: this.blockInfo.chainKey,
-            // hash: this.blockInfo.hash, // hash 
-            from: row.fromShard,
-            to: row.toShard,
-            height: this.blockInfo.height
-          }
-        })
+        this.$store.commit("setParameters", {
+          type: 'S',
+          chainKey: this.blockInfo.chainKey,
+          from: row.fromShard,
+          to: row.toShard,
+          height: this.blockInfo.height
+        });
+        this.$router.push('/tradinginfo')
       }
     }
   }
 </script>
 
 <style lang="scss">
-  .child_card {
-
-    .el-table td,
-    .el-table th.is-leaf {
-      border-bottom: 1px solid #fff;
+  .stream_table {
+    .el-table .cell {
+      padding-right: 0;
+      padding-left: 0;
     }
   }
 </style>

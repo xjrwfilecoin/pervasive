@@ -1,5 +1,4 @@
 import _ from "lodash";
-// import io from 'socket.io-client'
 import EventEmitter from 'eventemitter3'
 import P from 'bluebird'
 
@@ -32,6 +31,7 @@ class wsClinet extends EventEmitter {
                     let msg = JSON.parse(callback.data)
 
                     if (msg.error) {
+                        store.commit("updateApiCount", "sub");
                         Message.warning(msg.error.message)
                         return
                     }
@@ -76,7 +76,8 @@ class wsClinet extends EventEmitter {
                 }
 
                 this.client.onerror = (event) => {
-                    console.log('error', event)
+                    store.commit("updateApiCount", "sub");
+                    reject()
                 }
 
                 this.timer = setTimeout(() => {
@@ -96,7 +97,7 @@ class wsClinet extends EventEmitter {
 
                 let to = () => {
                     reject('timeout');
-                    this.removeAllListeners(msgId);                  
+                    this.removeAllListeners(msgId);
                 };
 
                 this.once(msgId, (result) => {
@@ -114,7 +115,7 @@ class wsClinet extends EventEmitter {
                     }
 
                 });
-                let timer = setTimeout(to, 10000);
+                let timer = setTimeout(to, 8000);
 
                 let data = {
                     body: body,

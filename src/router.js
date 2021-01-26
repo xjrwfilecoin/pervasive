@@ -19,14 +19,10 @@ export default new Router({
   routes: [
     ...roleRouter,
     {
-      path: '/',
-      name: 'DataBoard',
-      redirecet: '/databoard'
-    },
-    {
       path: '/databoard',
       name: 'DataBoard',
-      component: resolve => require(['./components/pages/DataBoard.vue'], resolve)
+      redirecet: '/databoard',
+      component: resolve => require(['./components/pages/DataBoard.vue'], resolve),
     },
     {
       path: '/blockinfo',

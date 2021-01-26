@@ -7,7 +7,7 @@
           <div slot="header">
             <span><i class="iconfont iconqukuai"></i>所属区块</span>
             <span style="float:right">
-              <el-button type="primary" size="mini" @click="turnToDB">返回</el-button>
+              <el-button type="primary" size="mini" @click="turnToBlockInfo">返回</el-button>
             </span>
           </div>
           <el-row :gutter="10">
@@ -64,7 +64,7 @@
           <div slot="header">
             <span><i class="iconfont iconqukuai"></i>分片交易列表</span>
           </div>
-          <el-table :data="tradList" stripe border size="mini" height="calc(75vh - 163px)"
+          <el-table :data="tradList" stripe border size="mini" height="calc(75vh - 120px)"
             :header-cell-style="{background:'#F0F4FB',color:'#2c2c2c'}">
             <el-table-column type="index" label="序号" width="80" align="center">
             </el-table-column>
@@ -74,7 +74,7 @@
             </el-table-column>
             <el-table-column prop="to" label="接收方" min-width="220" align="center" show-overflow-tooltip>
             </el-table-column>
-            <el-table-column prop="amount" label="金额（FIL）" min-width="200" align="center">
+            <el-table-column prop="amount" label="金额（ME）" min-width="200" align="center">
             </el-table-column>
             <el-table-column label="操作" width="80" align="center">
               <template slot-scope="scope">
@@ -82,8 +82,8 @@
               </template>
             </el-table-column>
           </el-table>
-          <el-pagination style="text-align:center" layout="total, prev, pager, next, jumper" :total="Total"
-            :page-size="Size" :current-page="currentPage" @current-change="handleCurrentChange"></el-pagination>
+          <!-- <el-pagination style="text-align:center" layout="total, prev, pager, next, jumper" :total="Total"
+            :page-size="Size" :current-page="currentPage" @current-change="handleCurrentChange"></el-pagination> -->
         </el-card>
       </div>
     </div>
@@ -117,10 +117,11 @@
     watch: {
       $route() {
         if (this.$route.path == '/tradinginfo') {
-          this.chainKey = this.$router.currentRoute.query.chainKey
-          this.from = this.$router.currentRoute.query.from
-          this.to = this.$router.currentRoute.query.to
-          this.height = this.$router.currentRoute.query.height
+          let parameters = this.$store.getters.parameters;
+          this.chainKey = parameters.chainKey
+          this.from = parameters.from
+          this.to = parameters.to
+          this.height = parameters.height
           this.getBlockInfo()
           this.getTradList()
         }
@@ -151,34 +152,31 @@
         },
 
         tradList: [],
-        Total: 0,
-        currentPage: 1,
-        Size: 10,
+        // Total: 0,
+        // currentPage: 1,
+        // Size: 10,
         tradDialog: false,
         tradForm: {}
       }
     },
 
-    created() {
-      this.chainKey = this.$router.currentRoute.query.chainKey
-      // this.hash = this.$router.currentRoute.query.hash
-      this.from = this.$router.currentRoute.query.from
-      this.to = this.$router.currentRoute.query.to
-      this.height = this.$router.currentRoute.query.height
+    mounted() {
+      let parameters = this.$store.getters.parameters;
+      this.chainKey = parameters.chainKey
+      this.from = parameters.from
+      this.to = parameters.to
+      this.height = parameters.height
       this.getBlockInfo()
       this.getTradList()
     },
     methods: {
-      turnToDB() {
-        this.$router.push({
-          path: '/blockinfo',
-          query: {
-            type: 'S',
-            chainKey: this.chainKey,
-            height: this.height, //区块高度
-            // hash: this.hash, // hash 
-          }
-        })
+      turnToBlockInfo() {
+        this.$store.commit("setParameters", {
+          type: 'S',
+          chainKey: this.chainKey,
+          height: this.height, //区块高度
+        });
+        this.$router.push('/blockinfo')
       },
 
       getBlockInfo() {
@@ -189,7 +187,6 @@
             type: 'S',
             chainKey: this.chainKey,
             height: parseInt(this.height),
-            // hash: this.hash
           }
           this.webSocket.sendRequest('blockInfo', params).then((result) => {
             if (JSON.stringify(result) != "{}") {
@@ -224,12 +221,22 @@
       },
 
 
-      handleCurrentChange(value) {
-        this.currentPage = value
-      }
+      // handleCurrentChange(value) {
+      //   this.currentPage = value
+      // }
     }
   }
 </script>
+
+<style lang="scss">
+  .trad_list {
+
+    .el-table td.gutter,
+    .el-table th.gutter {
+      background-color: #F0F4FB;
+    }
+  }
+</style>
 
 <style lang="scss" scoped>
   .fblock_info {

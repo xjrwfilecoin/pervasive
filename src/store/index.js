@@ -32,28 +32,21 @@ const initState = {
     tpsLine: [],
 
     // blockInfo基本信息
-    blockInfo: {
-        type: '', //[b|r|s], 链类型
-        chainKey: '', // 链编号
-        nodeId: '', // 节点id
-        height: 0, //当前区块高度
-        father: '', //父区块hash
-        hash: '', //区块hash
-        vrf: '', //VRF
-        time: new Date(), //当前产生时间
-        interval: 0, //出块间隔
-        trans: 0, //交易数量
-        size: 0, //区块大小
-    },
+    blockInfo: {},
 
-    cmdbody: null,
-
+    parameters: {},
 };
 
 const getters = {};
 
 export default new Vuex.Store({
     state: _.clone(initState),
+
+    getters: {
+        parameters: state => { //获取方法
+            return state.parameters;
+        }
+    },
 
     mutations: {
         /* 打开Loading */
@@ -109,6 +102,9 @@ export default new Vuex.Store({
                 item.id = item.type + item.chainKey
                 item.name = item.type + item.chainKey
                 item.tps = 0.0
+                if (!item.average) {
+                    item.average = 0.0
+                }
                 item.recently = parseInt(item.recently + 1)
                 item.open = false
 
@@ -150,8 +146,12 @@ export default new Vuex.Store({
                         break;
                 }
             })
-           
+
             _.each(shards, s => {
+                if (!showChain['B']) {
+                    showChain = {}
+                    return
+                }
                 if (showChain[s.pid]) {
                     showChain[s.pid].tps = parseFloat(showChain[s.pid].tps + s.tps)
                     showChain['B'].tps = parseFloat(showChain['B'].tps + s.tps)
@@ -182,9 +182,17 @@ export default new Vuex.Store({
                         chainInfo[item.type + item.chainKey].average = chainInfo[item.type + item.chainKey].interval
                     } else if (chainInfo[item.type + item.chainKey].interval != 0 && aInfo[item.type + item.chainKey].average != 0) {
                         chainInfo[item.type + item.chainKey].average = parseFloat((aInfo[item.type + item.chainKey].average * aInfo[item.type + item.chainKey].num + item.interval) / (aInfo[item.type + item.chainKey].num + 1))
+                    } else {
+                        chainInfo[item.type + item.chainKey].average = 0
                     }
                     aInfo[item.type + item.chainKey].num++
                     aInfo[item.type + item.chainKey].average = chainInfo[item.type + item.chainKey].average
+                } else {
+                    aInfo[item.type + item.chainKey] = {
+                        tps: 0.0,
+                        average: 0.0,
+                        num: 0
+                    }
                 }
             })
             state.averageInfo = aInfo
@@ -235,6 +243,15 @@ export default new Vuex.Store({
             state.wsState = data
         },
 
+        // 路由参数
+        setParameters(state, parametersData) {
+            state.parameters = parametersData;
+        },
+
+        // blockinfo
+        setBlockInfo(state, data) {
+            state.blockInfo = data;
+        }
     },
 
     actions: {}

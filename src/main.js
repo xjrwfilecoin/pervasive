@@ -2,42 +2,18 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import cookie from 'js-cookie'
-import RestClient from './lib/restClient' // axios
 import wsClient from './lib/wsClinet' // websocket
 import {
   BASE_URL
 } from './config'
 
-// import {
-//   mapState,
-//   mapActions
-// } from "vuex"
-
-import * as filters from './filter'
-// import Clipboard from 'v-clipboard' // 剪切板
-// Vue.use(Clipboard);
 
 import './assets/iconfont/iconfont.css'
 import './assets/iconfont/iconfont.js'
 
-
-Object.keys(filters).forEach(key => {
-  Vue.filter(key, filters[key])
-});
-import 'vue-awesome/icons'
-import Icons from 'vue-awesome/components/Icon'
-Vue.component('icon', Icons);
-
-import VueParticles from 'vue-particles'
-Vue.use(VueParticles)
-
 // ui按需引入
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
-// import {
-//   sort
-// } from 'core-js/fn/array'
 Vue.use(ElementUI);
 
 router.beforeEach((to, from, next) => {
@@ -74,10 +50,9 @@ router.beforeEach((to, from, next) => {
   //   }
   // }
 });
-Vue.prototype.RestClient = RestClient;
-Vue.prototype.Cookie = cookie;
 
 const webSocket = new wsClient(store);
+let loadinginstace
 
 let socketInit = () => {
   store.state.chainInfo = {}
@@ -86,43 +61,60 @@ let socketInit = () => {
   store.state.showChain = []
   webSocket.startUp("ws://" + BASE_URL + "/v1.0/wsConn").then(() => {
     console.log('连接成功了~~~');
+    if (loadinginstace) {
+      loadinginstace.close()
+    }
 
     // 订阅
     return webSocket.sendSubscribe('block', {}).then(() => {
 
-      webSocket.sendRequest('chainInfo', {}).then((result) => {
-        store.commit('inintTPS')
+      return webSocket.sendRequest('chainInfo', {}).then((result) => {
+        if (result && result.data != null) {
+          store.commit('inintTPS')
 
-        let obj = {};
-        let ban_obj = {};
-        _.each(result.data, item => {
-          item.average = 0.0
-          item.tps = 0.0
-          item.recently = 0
-          obj[item.type + item.chainKey] = item;
+          let obj = {};
+          let ban_obj = {};
+          _.each(result.data, item => {
+            item.average = 0.0
+            item.tps = 0.0
+            item.recently = 0
+            obj[item.type + item.chainKey] = item;
 
-          ban_obj[item.type + item.chainKey] = {
-            tps: 0.0,
-            average: 0.0,
-            num: 0
-          }
-        });
-        store.commit('updateBalance', ban_obj)
-        store.commit('inintChain', obj)
-      })
-    })
+            ban_obj[item.type + item.chainKey] = {
+              tps: 0.0,
+              average: 0.0,
+              num: 0
+            }
+          });
+          store.commit('updateBalance', ban_obj)
+          store.commit('inintChain', obj)
+        }
+      }).catch(() => {})
+    }).catch(() => {})
 
   }).catch((error) => {
-    ElementUI.Message.warning(error)
-
-    return P.reject(_.isString(error) ? new Error(error) : error);
-  }).finally(() => {
-
-  });
+    if (!loadinginstace) {
+      loadinginstace = ElementUI.Loading.service({
+        lock: true,
+        text: '连接失败！',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
+    }
+    return null;
+  }).finally(() => {});
 }
 
 webSocket.on('onClose', () => {
-  socketInit();
+  // 重连
+  let timeS = 15
+  let timeStop = setInterval(() => {
+    timeS--;
+    if (timeS > 0) {} else {
+      socketInit();
+      clearInterval(timeStop); //清除定时器
+    }
+  }, 1000)
 })
 
 socketInit();
