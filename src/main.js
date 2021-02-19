@@ -89,10 +89,10 @@ let socketInit = () => {
           store.commit('updateBalance', ban_obj)
           store.commit('inintChain', obj)
         }
-      }).catch(() => {})
-    }).catch(() => {})
+      }).catch((err) => {})
+    }).catch((err) => {})
 
-  }).catch((error) => {
+  }).catch((err) => {
     if (!loadinginstace) {
       loadinginstace = ElementUI.Loading.service({
         lock: true,
@@ -106,6 +106,14 @@ let socketInit = () => {
 }
 
 webSocket.on('onClose', () => {
+  if (!loadinginstace) {
+    loadinginstace = ElementUI.Loading.service({
+      lock: true,
+      text: '连接失败！',
+      spinner: 'el-icon-loading',
+      background: 'rgba(0, 0, 0, 0.7)'
+    })
+  }
   // 重连
   let timeS = 15
   let timeStop = setInterval(() => {

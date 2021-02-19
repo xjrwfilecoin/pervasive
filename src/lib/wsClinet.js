@@ -33,6 +33,7 @@ class wsClinet extends EventEmitter {
                     if (msg.error) {
                         store.commit("updateApiCount", "sub");
                         Message.warning(msg.error.message)
+                        reject()
                         return
                     }
                     //event
@@ -81,6 +82,7 @@ class wsClinet extends EventEmitter {
                 }
 
                 this.timer = setTimeout(() => {
+                    //     // throw new Error()
                     this.client.close();
                     reject()
                 }, 1000)
@@ -96,8 +98,8 @@ class wsClinet extends EventEmitter {
                 let msgId = Math.random().toString(36).substr(2, 8);
 
                 let to = () => {
-                    reject('timeout');
                     this.removeAllListeners(msgId);
+                    reject('timeout');
                 };
 
                 this.once(msgId, (result) => {
@@ -123,7 +125,7 @@ class wsClinet extends EventEmitter {
                 };
                 data[type] = value;
 
-                this.client.send(JSON.stringify(data))
+                this.client.send(JSON.stringify(data)).catch(() => {})
             }
             return new P(fun.bind(this))
         }

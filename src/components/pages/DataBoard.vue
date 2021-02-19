@@ -128,6 +128,9 @@
 
     methods: {
       zTreeOnRightClick: function (e, treeId, treeNode) {
+        if (!treeNode) {
+          return
+        }
         this.$store.commit("setParameters", {
           type: treeNode.type,
           chainKey: treeNode.chainKey,
